@@ -1,0 +1,25 @@
+{
+  "name": "employee_tracker",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/peterlim995/Employee_Tracker.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/peterlim995/Employee_Tracker/issues"
+  },
+  "homepage": "https://github.com/peterlim995/Employee_Tracker#readme",
+  "dependencies": {
+    "express": "^4.18.2",
+    "inquirer": "^8.2.5",
+    "mysql2": "^2.3.3"
+  }
+}
