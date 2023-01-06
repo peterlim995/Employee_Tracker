@@ -131,12 +131,91 @@ function viewAllEmployees() {
     // })
 }
 
+function roleList(){
+    return ['Sales Lead','Salesperson'];
+}
+
+function managerList(){
+    return ['John Doe', 'Mike Chan'];
+}
+
 function addEmployee() {
-    menu();
+    inquirer
+        .prompt([
+            {
+                type: 'input',
+                name: 'firstname',
+                message: `What is the employee's first name?`,
+            },
+            {
+                type: 'input',
+                name: 'lastname',
+                message: `What is the employee's last name?`,
+            },
+            {
+                type: 'list',
+                name: 'role',
+                message: `What is the employee's role?`,                
+                choices: roleList(),
+            },
+            {
+                type: 'list',
+                name: 'manager',
+                message: `Who is the employee's manager?`,                
+                choices: managerList(),
+            },
+        ])
+        .then(answer => {
+            const { firstname, lastname, role, manager } = answer;
+            const sql = `INSERT INTO employee (first_name, last_name, role_id, manager_id) 
+                VALUES (?,?,?,?)`;
+            // console.log("call: ",departList);
+
+            db.promise().query(sql, [firstname, lastname, 2,2])
+                .then(results => {
+                    console.log(`Added ${firstname} ${lastname} to the database`);
+                    menu();
+                })
+                .catch(err =>
+                    console.error(err)
+                );
+        })
+}
+
+function employeeList(){
+    return ['John Doe', 'Mike Chan'];
 }
 
 function updateEmployeeRole() {
-    menu();
+    inquirer
+        .prompt([
+            {
+                type: 'list',
+                name: 'employeeName',
+                message: `Which employee's role do you want to update?`,
+                choices: employeeList(),
+            },
+            {
+                type: 'list',
+                name: 'role',
+                message: `Which role do you want to assign the selected employee?`,
+                choices: roleList(),
+            },          
+        ])
+        .then(answer => {
+            const { employeeName, role } = answer;
+            const sql = `UPDATE employee SET role_id = ? where first_name = ? and last_name = ?`;
+            // console.log("call: ",departList);
+
+            db.promise().query(sql, [2, 'John','Doe'])
+                .then(results => {
+                    console.log(`Updated employee's role`);
+                    menu();
+                })
+                .catch(err =>
+                    console.error(err)
+                );
+        })
 }
 
 function viewAllRole() {
@@ -158,17 +237,17 @@ function viewAllRole() {
 
 // return array of department name
 function departmentList(){
-    const sql = `SELECT name from department;`;
+    // const sql = `SELECT name from department;`;
 
-    // let departmentList;
-    db.query(sql, (err,results) => {
-        if(err)
-            console.error(err);
-        // console.log("result: ",results);
-        return new Promise((resolve, reject) => resolve(results));
-    });
+    // // let departmentList;
+    // db.query(sql, (err,results) => {
+    //     if(err)
+    //         console.error(err);
+    //     // console.log("result: ",results);
+    //     return new Promise((resolve, reject) => resolve(results));
+    // });
         
-    // return departmentList;    
+     return ['Sales','Engineering'];    
 }
 
 
@@ -192,7 +271,8 @@ async function addRole() {
                 type: 'list',
                 name: 'department',
                 message: 'Which department does the role belong to?',
-                choices: ['gdg','dgsdg'],
+                // working on
+                choices: departmentList(),
             },
         ])
         .then(answer => {
