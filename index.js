@@ -4,21 +4,23 @@ const logo = require('asciiart-logo');
 const config = require('./package.json');
 const cTable = require('console.table');
 const e = require('express');
+const db = require('./db/connection');
+const EmployeeTracker = require('./db')
 
 
 console.log(logo(config).render());
 
+const employeeTracker = new EmployeeTracker(db);
 
-
-const db = mysql.createConnection(
-    {
-        host: 'localhost',
-        user: 'root',
-        password: 'root',
-        database: 'employee_db'
-    },
-    // console.log(`Connected to the employee_db database.`)
-);
+// const db = mysql.createConnection(
+//     {
+//         host: 'localhost',
+//         user: 'root',
+//         password: 'root',
+//         database: 'employee_db'
+//     },
+//     // console.log(`Connected to the employee_db database.`)
+// );
 
 
 // Prompt the menu
@@ -64,20 +66,34 @@ function menu() {
 }
 
 function viewAllEmployees() {
-    const sql = `SELECT employee.id AS id, first_name, last_name, title, name AS department, salary, manager_id AS manager
-    FROM employee
-    LEFT JOIN role ON employee.role_id = role.id
-    LEFT JOIN department ON role.department_id = department.id;`;
 
-    let employee;
+    employeeTracker.viewEmployee()
+        .then(results => {
+            console.table('\n', results);
+            menu();
+            // for (let i = 0; i < results.length; i++) {
+            //     if(results.manager){
 
-    db.promise().query(sql)
-        .then(results =>
-            managerName(results)
-        )
-        .catch(err =>
-            console.error(err)
-        );
+            //     }
+
+            // }
+            // employeeTracker.viewEmployee(results,1)
+            //     .then(result => {
+            //         console.log("Test: ", result);
+
+            //     })
+
+        });
+
+    // let employee;
+
+    // db.promise().query(sql)
+    //     .then(results =>
+    //         managerName(results)
+    //     )
+    //     .catch(err =>
+    //         console.error(err)
+    //     );
 
     // console.log(results[0][0].manager);
     // employee = results;})
@@ -131,11 +147,11 @@ function viewAllEmployees() {
     // })
 }
 
-function roleList(){
-    return ['Sales Lead','Salesperson'];
+function roleList() {
+    return ['Sales Lead', 'Salesperson'];
 }
 
-function managerList(){
+function managerList() {
     return ['John Doe', 'Mike Chan'];
 }
 
@@ -155,25 +171,22 @@ function addEmployee() {
             {
                 type: 'list',
                 name: 'role',
-                message: `What is the employee's role?`,                
+                message: `What is the employee's role?`,
                 choices: roleList(),
             },
             {
                 type: 'list',
                 name: 'manager',
-                message: `Who is the employee's manager?`,                
+                message: `Who is the employee's manager?`,
                 choices: managerList(),
             },
         ])
         .then(answer => {
             const { firstname, lastname, role, manager } = answer;
-            const sql = `INSERT INTO employee (first_name, last_name, role_id, manager_id) 
-                VALUES (?,?,?,?)`;
-            // console.log("call: ",departList);
 
-            db.promise().query(sql, [firstname, lastname, 2,2])
+            employeeTracker.createEmployee([firstname, lastname, 2, 2])
                 .then(results => {
-                    console.log(`Added ${firstname} ${lastname} to the database`);
+                    console.log('\n', results);
                     menu();
                 })
                 .catch(err =>
@@ -182,7 +195,7 @@ function addEmployee() {
         })
 }
 
-function employeeList(){
+function employeeList() {
     return ['John Doe', 'Mike Chan'];
 }
 
@@ -200,16 +213,14 @@ function updateEmployeeRole() {
                 name: 'role',
                 message: `Which role do you want to assign the selected employee?`,
                 choices: roleList(),
-            },          
+            },
         ])
         .then(answer => {
             const { employeeName, role } = answer;
-            const sql = `UPDATE employee SET role_id = ? where first_name = ? and last_name = ?`;
-            // console.log("call: ",departList);
-
-            db.promise().query(sql, [2, 'John','Doe'])
+  
+            employeeTracker.updateEmployee([2, 'John', 'Doe'])
                 .then(results => {
-                    console.log(`Updated employee's role`);
+                    console.log('\n', results);
                     menu();
                 })
                 .catch(err =>
@@ -220,23 +231,16 @@ function updateEmployeeRole() {
 
 function viewAllRole() {
 
-    const sql = `SELECT role.id, title, name AS department, salary
-    FROM role
-    JOIN department ON role.department_id = department.id`;
-
-    db.promise().query(sql)
+    employeeTracker.viewRole()
         .then(results => {
-            console.table('\n', results[0]);
+            console.table('\n', results);
             menu();
-        })
-        .catch(err =>
-            console.error(err)
-        );
+        });
 
 }
 
 // return array of department name
-function departmentList(){
+function departmentList() {
     // const sql = `SELECT name from department;`;
 
     // // let departmentList;
@@ -246,15 +250,15 @@ function departmentList(){
     //     // console.log("result: ",results);
     //     return new Promise((resolve, reject) => resolve(results));
     // });
-        
-     return ['Sales','Engineering'];    
+
+    return ['Sales', 'Engineering'];
 }
 
 
 async function addRole() {
 
     let departList = await departmentList();
-    console.log("call: ",departList);
+    console.log("call: ", departList);
     inquirer
         .prompt([
             {
@@ -277,12 +281,10 @@ async function addRole() {
         ])
         .then(answer => {
             const { role, salary, department } = answer;
-            const sql = `INSERT INTO role (title,salary,department_id) VALUES (?,?,?)`;
-            // console.log("call: ",departList);
 
-            db.promise().query(sql, [role, salary, 2])
+            employeeTracker.createRole([role, salary, 2])
                 .then(results => {
-                    console.log(`Added ${role} to the database`);
+                    console.log('\n', results);
                     menu();
                 })
                 .catch(err =>
@@ -294,16 +296,20 @@ async function addRole() {
 
 function viewAllDepartments() {
 
-    const sql = `select * from department`;
-
-    db.promise().query(sql)
+    employeeTracker.viewDepartment()
         .then(results => {
-            console.table('\n', results[0]);
+            console.table('\n', results);
             menu();
-        })
-        .catch(err =>
-            console.error(err)
-        );
+        });
+
+    // db.promise().query(sql)
+    //     .then(results => {
+    //         console.table('\n', results[0]);
+    //         menu();
+    //     })
+    //     .catch(err =>
+    //         console.error(err)
+    //     );
 
 
 }
@@ -320,11 +326,9 @@ function addDepartment() {
         ])
         .then(answer => {
             const { department } = answer;
-            const sql = `INSERT INTO department (name) VALUES (?)`;
-
-            db.promise().query(sql, department)
+            employeeTracker.createDepartment(department)
                 .then(results => {
-                    console.log(`Added ${department} to the database`);
+                    console.log('\n', results);
                     menu();
                 })
                 .catch(err =>
