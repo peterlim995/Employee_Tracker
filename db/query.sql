@@ -7,14 +7,23 @@ FROM role
 JOIN department ON role.department_id = department.id;
 
 -- view all employees
-SELECT employee.id, first_name, last_name, title, name AS department, salary, 
+SELECT employee.id AS id, first_name, last_name, title, name AS department, salary, manager_id AS manager
+FROM employee
+LEFT JOIN role ON employee.role_id = role.id
+LEFT JOIN department ON role.department_id = department.id;
+
+-- select manager's first name and last name
+select first_name, last_name from employee where id = ?;
+
+-- insert new department name
+INSERT INTO department (name) VALUES ('?');
+
+
+SELECT employee.id AS id, first_name, last_name, title, name AS department, salary, 
 IF(manager_id != null, CONCAT(first_name,' ',last_name), manager_id) AS manager
 FROM employee
-JOIN role ON employee.role_id = role.id
-JOIN department ON role.department_id = department.id;
--- JOIN employee ON employee.manager_id = employee.id;
-
-
+LEFT JOIN role ON employee.role_id = role.id
+LEFT JOIN department ON role.department_id = department.id;
 
 
 
