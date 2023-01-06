@@ -18,6 +18,8 @@ select first_name, last_name from employee where id = ?;
 -- insert new department name
 INSERT INTO department (name) VALUES ('?');
 
+-- select name of department
+SELECT name from department;
 
 SELECT employee.id AS id, first_name, last_name, title, name AS department, salary, 
 IF(manager_id != null, CONCAT(first_name,' ',last_name), manager_id) AS manager

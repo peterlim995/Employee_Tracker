@@ -156,8 +156,59 @@ function viewAllRole() {
 
 }
 
-function addRole() {
-    menu();
+// return array of department name
+function departmentList(){
+    const sql = `SELECT name from department;`;
+
+    // let departmentList;
+    db.query(sql, (err,results) => {
+        if(err)
+            console.error(err);
+        // console.log("result: ",results);
+        return new Promise((resolve, reject) => resolve(results));
+    });
+        
+    // return departmentList;    
+}
+
+
+async function addRole() {
+
+    let departList = await departmentList();
+    console.log("call: ",departList);
+    inquirer
+        .prompt([
+            {
+                type: 'input',
+                name: 'role',
+                message: 'What is the name of the role?',
+            },
+            {
+                type: 'input',
+                name: 'salary',
+                message: 'What is the salary of the role?',
+            },
+            {
+                type: 'list',
+                name: 'department',
+                message: 'Which department does the role belong to?',
+                choices: ['gdg','dgsdg'],
+            },
+        ])
+        .then(answer => {
+            const { role, salary, department } = answer;
+            const sql = `INSERT INTO role (title,salary,department_id) VALUES (?,?,?)`;
+            // console.log("call: ",departList);
+
+            db.promise().query(sql, [role, salary, 2])
+                .then(results => {
+                    console.log(`Added ${role} to the database`);
+                    menu();
+                })
+                .catch(err =>
+                    console.error(err)
+                );
+        })
 
 }
 
