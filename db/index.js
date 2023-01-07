@@ -52,7 +52,14 @@ class EmployeeTracker {
     async createEmployee(employee) {
         const sql = `INSERT INTO employee (first_name, last_name, role_id, manager_id) 
         VALUES (?,?,?,?)`;
-        let result = await this.db.promise().query(sql, employee);
+        const sql2 = `INSERT INTO employee (first_name, last_name, role_id) 
+        VALUES (?,?,?)`;
+        if(employee.length === 3){
+            await this.db.promise().query(sql2, employee);
+        } else {
+            await this.db.promise().query(sql, employee);
+        }
+        
         return `Added ${employee[0]} ${employee[1]} to the database`;
     }
 
@@ -104,6 +111,5 @@ class EmployeeTracker {
         return id;
     }
 }
-
 
 module.exports = EmployeeTracker;

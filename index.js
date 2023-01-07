@@ -128,7 +128,7 @@ async function addEmployee() {
                 type: 'list',
                 name: 'manager',
                 message: `Who is the employee's manager?`,
-                choices: managerNames,
+                choices: ['None', ...managerNames],
             },
         ])
         .then(async answer => {
@@ -136,9 +136,15 @@ async function addEmployee() {
 
             try {
                 const roleId = await employeeTracker.roleIdbyTitle(role);
-                const managerId = await employeeTracker.managerIdByFullName(manager);
+                let results;
 
-                const results = await employeeTracker.createEmployee([firstname, lastname, roleId, managerId]);
+                if(manager === 'None'){
+                    results = await employeeTracker.createEmployee([firstname, lastname, roleId]);
+                } else {
+                    const managerId = await employeeTracker.managerIdByFullName(manager);
+                    results = await employeeTracker.createEmployee([firstname, lastname, roleId, managerId]);
+                }
+                
 
                 console.log('\n', results);
                 menu();
