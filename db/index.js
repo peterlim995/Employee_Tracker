@@ -8,7 +8,7 @@ class EmployeeTracker {
 
     // find all departments
     async viewDepartment() {
-        const sql = `select * from department`;
+        const sql = `select * from department order by name`;
         let result = await this.db.promise().query(sql);
         return result[0];
     }

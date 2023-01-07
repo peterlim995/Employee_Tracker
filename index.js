@@ -6,9 +6,10 @@ const db = require('./db/connection');
 const EmployeeTracker = require('./db');
 // const questions = require('./db/prompt');
 
-
+// Logo Prompt
 console.log(logo(config).render());
 
+// EmployeeTracker Class 
 const employeeTracker = new EmployeeTracker(db);
 
 // Prompt the menu
@@ -21,7 +22,7 @@ async function menu() {
                     type: 'list',
                     name: 'todo',
                     message: 'What would you like to do?',
-                    choices: ['View All Employees', 'Add Employee', 'Update Employee Role', 'View All Role', 'Add Role', 'View All Departments', 'Add Department', 'Quit'],
+                    choices: ['View All Employees', 'Add Employee', 'Update Employee Role', 'View All Roles', 'Add Role', 'View All Departments', 'Add Department', 'Quit'],
                 },
             ]);
 
@@ -57,7 +58,6 @@ async function menu() {
         console.error(err)
     }
 }
-
 
 
 // Show all Employees
@@ -116,7 +116,7 @@ async function addEmployee() {
 
     try {
         const titles = await roleList();
-        const managerNames = await managerList();
+        const managerNames = await employeeList();
 
         const answer = await inquirer.prompt([
             {
