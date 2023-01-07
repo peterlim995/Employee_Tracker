@@ -27,6 +27,10 @@ SELECT id
 FROM department
 WHERE name = ?
 
+-- select id of employee
+
+
+
 
 
 SELECT employee.id AS id, first_name, last_name, title, name AS department, salary, 

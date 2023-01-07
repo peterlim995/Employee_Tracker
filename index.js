@@ -58,30 +58,54 @@ function viewAllEmployees() {
 
     employeeTracker.viewEmployee()
         .then(async results => {
-            for(let i = 0; i < results.length; i++){
+            for (let i = 0; i < results.length; i++) {
                 const result = results[i];
-                if(result.manager){
-                    result.manager =  await employeeTracker.getManagerId(result.manager);
+                if (result.manager) {
+                    result.manager = await employeeTracker.getManagerId(result.manager);
                 }
             }
             console.table('\n', results);
-            menu();            
+            menu();
         })
         .catch(err =>
             console.error(err)
-        );           
+        );
 }
 
-
-function roleList() {
-    return ['Sales Lead', 'Salesperson'];
+// Role title list return
+async function roleList() {
+    const role = await employeeTracker.viewRole();
+    return role.map(result => result.title);
 }
 
-function managerList() {
-    return ['John Doe', 'Mike Chan'];
+// Manager's full name list return
+async function managerList() {
+
+    // employee table receive
+    const employee = await employeeTracker.viewEmployee();
+    const employeeList = [];
+
+    // employee id list
+    const employeeIdList = [];
+
+    // remove duplicate id
+    employee.filter(result => result.manager != null).forEach(result => {
+        if(employeeIdList.indexOf(result.manager) === -1)
+            employeeIdList.push(result.manager);
+    });
+
+    // create Manager full name list
+    for (let i = 0; i < employeeIdList.length; i++) {        
+        employeeList.push(await employeeTracker.getManagerId(employeeIdList[i]));        
+    }
+    return employeeList;
 }
 
-function addEmployee() {
+async function addEmployee() {
+
+    const titles = await roleList();
+    const managerNames = await managerList();
+
     inquirer
         .prompt([
             {
@@ -98,26 +122,30 @@ function addEmployee() {
                 type: 'list',
                 name: 'role',
                 message: `What is the employee's role?`,
-                choices: roleList(),
+                choices: titles,
             },
             {
                 type: 'list',
                 name: 'manager',
                 message: `Who is the employee's manager?`,
-                choices: managerList(),
+                choices: managerNames,
             },
         ])
-        .then(answer => {
+        .then(async answer => {
             const { firstname, lastname, role, manager } = answer;
 
-            employeeTracker.createEmployee([firstname, lastname, 2, 2])
-                .then(results => {
-                    console.log('\n', results);
-                    menu();
-                })
-                .catch(err =>
-                    console.error(err)
-                );
+            try {
+                const roleId = await employeeTracker.roleIdbyTitle(role);
+                const managerId = await employeeTracker.managerIdByFullName(manager);
+
+                const results = await employeeTracker.createEmployee([firstname, lastname, roleId, managerId]);
+
+                console.log('\n', results);
+                menu();
+
+            } catch (err) {
+                console.error(err)
+            }            
         })
 }
 
@@ -143,7 +171,7 @@ function updateEmployeeRole() {
         ])
         .then(answer => {
             const { employeeName, role } = answer;
-  
+
             employeeTracker.updateEmployee([2, 'John', 'Doe'])
                 .then(results => {
                     console.log('\n', results);
@@ -169,18 +197,15 @@ function viewAllRole() {
 
 // return array of department name
 async function departmentList() {
-    let department = await employeeTracker.viewDepartment()
-    // console.log(department);
-    return department.map(result => result.name)
-    // return ['Sales', 'Engineering'];
-}
+    const department = await employeeTracker.viewDepartment()
+    return department.map(result => result.name);
 
+}
 
 // Add Role
 async function addRole() {
 
     let departList = await departmentList();
-    // console.log("call: ", departList);
     inquirer
         .prompt([
             {
@@ -196,7 +221,7 @@ async function addRole() {
             {
                 type: 'list',
                 name: 'department',
-                message: 'Which department does the role belong to?',                
+                message: 'Which department does the role belong to?',
                 choices: departList,
             },
         ])
@@ -204,15 +229,15 @@ async function addRole() {
             const { role, salary, department } = answer;
 
             try {
-            const departmentId = await employeeTracker.departmentIdbyName(department);
+                const departmentId = await employeeTracker.departmentIdbyName(department);
 
-            const results = await employeeTracker.createRole([role, salary, departmentId])
-            
-            console.log('\n', results);
-                    menu();
-            
-            } catch(err) { 
-                    console.error(err)
+                const results = await employeeTracker.createRole([role, salary, departmentId])
+
+                console.log('\n', results);
+                menu();
+
+            } catch (err) {
+                console.error(err)
             }
         })
 }
@@ -227,7 +252,7 @@ function viewAllDepartments() {
         })
         .catch(err =>
             console.error(err)
-        );        
+        );
 }
 
 // Add Department

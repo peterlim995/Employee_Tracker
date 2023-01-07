@@ -13,7 +13,7 @@ class EmployeeTracker {
         return result[0];
     }
 
-    
+
     // find all roles - join with departments to diplay department names
     async viewRole() {
         const sql = `SELECT role.id, title, name AS department, salary
@@ -72,12 +72,34 @@ class EmployeeTracker {
         return first_name + ' ' + last_name;
     }
 
-    // update employee's role - takes employee id and role id as input parameters
+    // return department id by name
     async departmentIdbyName(name) {
         const sql = `SELECT id 
         FROM department
         WHERE name = ?`;
         let result = await this.db.promise().query(sql, name);
+        const { id } = result[0][0];
+        return id;
+    }
+
+    // return role id by title
+    async roleIdbyTitle(title) {
+        const sql = `SELECT id 
+            FROM role
+            WHERE title = ?`;
+        let result = await this.db.promise().query(sql, title);
+        const { id } = result[0][0];
+        return id;
+    }
+
+    // return employee id by full name
+    async managerIdByFullName(name) {
+
+        const first_name = name.split(' ')[0];
+        const sql = `SELECT id 
+            FROM employee
+            WHERE first_name = ?`;
+        let result = await this.db.promise().query(sql, first_name);
         const { id } = result[0][0];
         return id;
     }
