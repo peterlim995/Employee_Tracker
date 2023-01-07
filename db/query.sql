@@ -21,6 +21,14 @@ INSERT INTO department (name) VALUES ('?');
 -- select name of department
 SELECT name from department;
 
+
+-- select id of department by name
+SELECT id 
+FROM department
+WHERE name = ?
+
+
+
 SELECT employee.id AS id, first_name, last_name, title, name AS department, salary, 
 IF(manager_id != null, CONCAT(first_name,' ',last_name), manager_id) AS manager
 FROM employee
