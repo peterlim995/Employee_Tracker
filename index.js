@@ -138,14 +138,14 @@ async function addEmployee() {
                 const roleId = await employeeTracker.roleIdbyTitle(role);
                 let results;
 
+                // No manager
                 if(manager === 'None'){
                     results = await employeeTracker.createEmployee([firstname, lastname, roleId]);
                 } else {
-                    const managerId = await employeeTracker.managerIdByFullName(manager);
+                    const managerId = await employeeTracker.employeeIdByFullName(manager);
                     results = await employeeTracker.createEmployee([firstname, lastname, roleId, managerId]);
                 }
                 
-
                 console.log('\n', results);
                 menu();
 
@@ -155,37 +155,50 @@ async function addEmployee() {
         })
 }
 
-function employeeList() {
-    return ['John Doe', 'Mike Chan'];
+// return employee's full name list array
+async function employeeList() {
+    const employees = await employeeTracker.viewEmployee();
+    return employees.map(result => result.first_name+' '+result.last_name);
 }
 
-function updateEmployeeRole() {
+async function updateEmployeeRole() {
+
+    // employee's full name array
+    const employees = await employeeList();
+    // role title list array
+    const titles = await roleList();
+
     inquirer
         .prompt([
             {
                 type: 'list',
                 name: 'employeeName',
                 message: `Which employee's role do you want to update?`,
-                choices: employeeList(),
+                choices: employees,
             },
             {
                 type: 'list',
                 name: 'role',
                 message: `Which role do you want to assign the selected employee?`,
-                choices: roleList(),
+                choices: titles,
             },
         ])
-        .then(answer => {
+        .then(async answer => {
             const { employeeName, role } = answer;
 
-            employeeTracker.updateEmployee([2, 'John', 'Doe'])
-                .then(results => {
-                    console.log('\n', results);
-                    menu();
-                })
-                .catch(err =>
-                    console.error(err)
-                );
+            try {
+                const name = employeeName.split(' ');
+                const first_name = name[0];
+                const last_name = name[1];
+
+                const roleId = await employeeTracker.roleIdbyTitle(role);
+                const results = await employeeTracker.updateEmployee([roleId, first_name, last_name])
+                console.log('\n', results);
+                menu();
+
+            } catch (err) {
+                console.error(err)
+            }            
         })
 }
 

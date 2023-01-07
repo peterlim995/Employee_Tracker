@@ -100,7 +100,7 @@ class EmployeeTracker {
     }
 
     // return employee id by full name
-    async managerIdByFullName(name) {
+    async employeeIdByFullName(name) {
 
         const first_name = name.split(' ')[0];
         const sql = `SELECT id 
