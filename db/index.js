@@ -108,7 +108,7 @@ class EmployeeTracker {
 
     // view Employees by manager - take manager id as input parameter
     async viewEmployeeByManager(managerId) {
-        const sql = `SELECT employee.id, first_name, last_name, name as department, title, salary 
+        const sql = `SELECT employee.id, first_name, last_name, title, name as department,  salary 
         FROM employee        
         LEFT JOIN role ON employee.role_id = role.id
         LEFT JOIN department ON role.department_id = department.id
@@ -116,6 +116,18 @@ class EmployeeTracker {
         let result = await this.db.promise().query(sql, managerId);
         return result[0];
     }
+
+    // view Employees by department - take manager id as input parameter
+    async viewEmployeeByDepartment(managerId) {
+        const sql = `SELECT employee.id, first_name, last_name, title, name as department,  salary 
+        FROM employee        
+        LEFT JOIN role ON employee.role_id = role.id
+        LEFT JOIN department ON role.department_id = department.id
+        WHERE manager_id = ?;`;
+        let result = await this.db.promise().query(sql, managerId);
+        return result[0];
+    }
+
 
     // return employee id by full name
     // async employeeIdByFullName(name) {

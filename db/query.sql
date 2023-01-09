@@ -28,14 +28,23 @@ SELECT id
 FROM department
 WHERE name = ?
 
--- select id of employee
+-- update Managger
+UPDATE employee SET manager_id = ? where id = ?
 
-
+-- view employees by manager
 SELECT employee.id, first_name, last_name, name as department, title, salary 
         FROM employee        
         LEFT JOIN role ON employee.role_id = role.id
         LEFT JOIN department ON role.department_id = department.id
         WHERE manager_id = 3;
+
+-- view employees by department
+SELECT employee.id AS id, employee.first_name, employee.last_name, title, name AS department, salary, CONCAT(em.first_name, ' ', em.last_name) AS manager
+FROM employee
+LEFT JOIN role ON employee.role_id = role.id
+LEFT JOIN department ON role.department_id = department.id
+LEFT JOIN employee em ON em.id = employee.manager_id
+WHERE department_id = 1;
 
 
 

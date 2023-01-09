@@ -282,7 +282,13 @@ async function viewAllRole() {
 // return array of department name
 async function departmentList() {
     const department = await employeeTracker.viewDepartment()
-    return department.map(result => result.name);
+    return department.map(result => {
+            return {
+                name: result.name,
+                value: result.id
+            }
+        }
+        );
 }
 
 // Add Role
@@ -315,8 +321,8 @@ async function addRole() {
         ]);
 
         const { role, salary, department } = answer;
-        const departmentId = await employeeTracker.departmentIdbyName(department);
-        const results = await employeeTracker.createRole([role, salary, departmentId])
+        // const departmentId = await employeeTracker.departmentIdbyName(department);
+        const results = await employeeTracker.createRole([role, salary, department])
         console.log('\n', results);
         menu();
 
@@ -462,6 +468,36 @@ async function viewEmployeesByManager() {
     }
 
 }
+
+// View employees by department
+async function viewEmployeesByDepartment() {
+    try {
+        const departList = await departmentList();
+
+        const chosenDepartment = await inquirer.prompt([
+            {
+                type: 'list',
+                name: 'department',
+                message: `Which department employees do you want to see?`,
+                choices: departList,
+            },
+        ]);
+
+        const { department } = chosenDepartment;
+        // const departmentId = await employeeTracker.departmentIdbyName(department);
+
+        const results = await employeeTracker.viewEmployeeByManager(managerId);
+
+        console.table('\n', results);
+
+        menu();
+
+    } catch (err) {
+        console.error(err)
+    }
+
+}
+
 
 // Finish the program
 function quit() {
