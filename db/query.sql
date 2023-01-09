@@ -31,6 +31,12 @@ WHERE name = ?
 -- select id of employee
 
 
+SELECT employee.id, first_name, last_name, name as department, title, salary 
+        FROM employee        
+        LEFT JOIN role ON employee.role_id = role.id
+        LEFT JOIN department ON role.department_id = department.id
+        WHERE manager_id = 3;
+
 
 
 

@@ -66,6 +66,10 @@ async function menu() {
                             value: 8
                         },
                         {
+                            name: 'View employees by manager',
+                            value: 9
+                        },
+                        {
                             name: 'Quit',
                             value: 0
                         }
@@ -99,6 +103,9 @@ async function menu() {
             case 8:
                 updateEmployeeManager();
                 break;
+            case 9:
+                viewEmployeesByManager();
+                break;
             case 0:
                 quit();
                 break;
@@ -119,7 +126,7 @@ async function viewAllEmployees() {
         for (let i = 0; i < results.length; i++) {
             const result = results[i];
             if (result.manager) {
-                result.manager = await employeeTracker.getManagerId(result.manager);
+                result.manager = await employeeTracker.managerNameById(result.manager);
             }
         }
 
@@ -127,7 +134,7 @@ async function viewAllEmployees() {
 
         // const employee = results.map(async (result) => {
         //     if (result.manager) {
-        //         result.manager = await employeeTracker.getManagerId(result.manager);
+        //         result.manager = await employeeTracker.managerNameById(result.manager);
         //     }
         //     return result;
         // })
@@ -145,29 +152,6 @@ async function viewAllEmployees() {
 async function roleList() {
     const role = await employeeTracker.viewRole();
     return role.map(result => result.title);
-}
-
-// Manager's full name list return
-async function managerList() {
-
-    // employee table receive
-    const employee = await employeeTracker.viewEmployee();
-    const employeeList = [];
-
-    // employee id list
-    const employeeIdList = [];
-
-    // remove duplicate id
-    employee.filter(result => result.manager != null).forEach(result => {
-        if (employeeIdList.indexOf(result.manager) === -1)
-            employeeIdList.push(result.manager);
-    });
-
-    // create Manager full name list
-    for (let i = 0; i < employeeIdList.length; i++) {
-        employeeList.push(await employeeTracker.getManagerId(employeeIdList[i]));
-    }
-    return employeeList;
 }
 
 
@@ -203,12 +187,12 @@ async function addEmployee() {
                     {
                         name: 'None',
                         value: -1
-                     }, ...managerNames
-                    ],
+                    }, ...managerNames
+                ],
             },
         ]);
 
-        console.log("answer: ",answer);
+        console.log("answer: ", answer);
 
         const { firstname, lastname, role, managerId } = answer;
 
@@ -219,7 +203,7 @@ async function addEmployee() {
         // if No manager
         if (managerId === -1) {
             results = await employeeTracker.createEmployee([firstname, lastname, roleId]);
-        } else {            
+        } else {
             results = await employeeTracker.createEmployee([firstname, lastname, roleId, managerId]);
         }
 
@@ -269,7 +253,7 @@ async function updateEmployeeRole() {
         ]);
 
 
-        const { employeeId, role } = answer;       
+        const { employeeId, role } = answer;
 
         const roleId = await employeeTracker.roleIdbyTitle(role);
         const results = await employeeTracker.updateEmployee([roleId, employeeId]);
@@ -382,7 +366,7 @@ async function addDepartment() {
 // Update Employee Manager
 async function updateEmployeeManager() {
     try {
-        
+
         const employees = await employeeList();
 
         const chosenEmployee = await inquirer.prompt([
@@ -395,7 +379,7 @@ async function updateEmployeeManager() {
         ]);
 
         const { employeeId } = chosenEmployee;
-        
+
         const managerNames = employees.filter(result => result.value != employeeId);
 
         const answer = await inquirer.prompt([
@@ -407,8 +391,8 @@ async function updateEmployeeManager() {
                     {
                         name: 'None',
                         value: -1
-                     }, ...managerNames
-                    ],
+                    }, ...managerNames
+                ],
             },
         ]);
 
@@ -421,6 +405,62 @@ async function updateEmployeeManager() {
     } catch (err) {
         console.error(err)
     }
+}
+
+
+// Manager's full name list return
+async function managerList() {
+
+    // employee table receive
+    const employee = await employeeTracker.viewEmployee();
+    const employeeList = [];
+
+    // employee id list
+    const employeeIdList = [];
+
+    // remove duplicate id
+    employee.filter(result => result.manager != null).forEach(result => {
+        if (employeeIdList.indexOf(result.manager) === -1)
+            employeeIdList.push(result.manager);
+    });
+
+    // create object of Manager full name and id
+    for (let i = 0; i < employeeIdList.length; i++) {
+        employeeList.push({
+            name: await employeeTracker.managerNameById(employeeIdList[i]),
+            value: employeeIdList[i]
+        });
+    }
+    return employeeList;
+}
+
+
+// View employees by manager
+async function viewEmployeesByManager() {
+    try {
+        const managers = await managerList();
+
+        const chosenManager = await inquirer.prompt([
+            {
+                type: 'list',
+                name: 'managerId',
+                message: `Which manager's employees do you want to see?`,
+                choices: managers,
+            },
+        ]);
+
+        const { managerId } = chosenManager;
+
+        const results = await employeeTracker.viewEmployeeByManager(managerId);
+
+        console.table('\n', results);
+
+        menu();
+
+    } catch (err) {
+        console.error(err)
+    }
+
 }
 
 // Finish the program

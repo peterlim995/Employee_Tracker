@@ -15,7 +15,7 @@ class EmployeeTracker {
 
 
     // find all roles - join with departments to diplay department names
-    async viewRole() {        
+    async viewRole() {
         const sql = `SELECT role.id, title, name AS department, salary
         FROM role
         LEFT JOIN department ON role.department_id = department.id`;
@@ -54,12 +54,12 @@ class EmployeeTracker {
         VALUES (?,?,?,?)`;
         const sql2 = `INSERT INTO employee (first_name, last_name, role_id) 
         VALUES (?,?,?)`;
-        if(employee.length === 3){
+        if (employee.length === 3) {
             await this.db.promise().query(sql2, employee);
         } else {
             await this.db.promise().query(sql, employee);
         }
-        
+
         return `Added ${employee[0]} ${employee[1]} to the database`;
     }
 
@@ -71,7 +71,7 @@ class EmployeeTracker {
     }
 
     // return employee's full name by id
-    async getManagerId(id) {
+    async managerNameById(id) {
         const sql = `select first_name, last_name from employee where id = ?`;
         let result = await this.db.promise().query(sql, id);
         const { first_name, last_name } = result[0][0];
@@ -106,6 +106,16 @@ class EmployeeTracker {
         return `Updated Manager`;
     }
 
+    // view Employees by manager - take manager id as input parameter
+    async viewEmployeeByManager(managerId) {
+        const sql = `SELECT employee.id, first_name, last_name, name as department, title, salary 
+        FROM employee        
+        LEFT JOIN role ON employee.role_id = role.id
+        LEFT JOIN department ON role.department_id = department.id
+        WHERE manager_id = ?;`;
+        let result = await this.db.promise().query(sql, managerId);
+        return result[0];
+    }
 
     // return employee id by full name
     // async employeeIdByFullName(name) {
