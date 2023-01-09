@@ -50,6 +50,14 @@ WHERE department_id = 1;
 DELETE FROM department WHERE id = ?;
 
 
+-- Total utilized budget of a department
+SELECT name AS Department, SUM(salary) AS "Total Utilized Budget"
+        FROM employee        
+        LEFT JOIN role ON employee.role_id = role.id
+        LEFT JOIN department ON role.department_id = department.id
+        WHERE department.id = 3
+        GROUP BY department;
+
 
 SELECT employee.id AS id, first_name, last_name, title, name AS department, salary, 
 IF(manager_id != null, CONCAT(first_name,' ',last_name), manager_id) AS manager

@@ -86,6 +86,10 @@ async function menu() {
                             value: 13
                         },
                         {
+                            name: 'View total utilized budget of department',
+                            value: 14
+                        },
+                        {
                             name: 'Quit',
                             value: 0
                         }
@@ -133,6 +137,9 @@ async function menu() {
                 break;
             case 13:
                 deleteEmployee();
+                break;
+            case 14:
+                departmentBudget();
                 break;
             case 0:
                 quit();
@@ -186,8 +193,8 @@ async function roleList() {
                 id: result.id,
                 title: result.title
             }
-        }    
-        
+        }
+
     });
 }
 
@@ -321,7 +328,10 @@ async function departmentList() {
     return department.map(result => {
         return {
             name: result.name,
-            value: result.id
+            value: {
+                id: result.id,
+                name: result.name
+            }
         }
     }
     );
@@ -358,7 +368,7 @@ async function addRole() {
 
         const { role, salary, department } = answer;
         // const departmentId = await employeeTracker.departmentIdbyName(department);
-        const results = await employeeTracker.createRole([role, salary, department])
+        const results = await employeeTracker.createRole([role, salary, department.id])
         console.log('\n', results);
         menu();
 
@@ -513,15 +523,15 @@ async function viewEmployeesByDepartment() {
         const chosenDepartment = await inquirer.prompt([
             {
                 type: 'list',
-                name: 'departmentId',
+                name: 'department',
                 message: `Which department employees do you want to see?`,
                 choices: departList,
             },
         ]);
 
-        const { departmentId } = chosenDepartment;
+        const { department } = chosenDepartment;
 
-        const results = await employeeTracker.viewEmployeeByDepartment(departmentId);
+        const results = await employeeTracker.viewEmployeeByDepartment(department.id);
 
         if (results.length !== 0) {
             console.table('\n', results);
@@ -544,15 +554,15 @@ async function deleteDepartment() {
         const chosenDepartment = await inquirer.prompt([
             {
                 type: 'list',
-                name: 'departmentId',
+                name: 'department',
                 message: `Which department do you want to delete?`,
                 choices: departList,
             },
         ]);
 
-        const { departmentId } = chosenDepartment;
+        const { department } = chosenDepartment;
 
-        const results = await employeeTracker.deleteDepartment(departmentId);
+        const results = await employeeTracker.deleteDepartment(department.id);
 
         console.log(results);
 
@@ -620,6 +630,45 @@ async function deleteEmployee() {
 
 }
 
+
+// View total utilized budget of a department 
+async function departmentBudget() {
+    try {
+
+        const departList = await departmentList();
+
+        const chosenDepartment = await inquirer.prompt([
+            {
+                type: 'list',
+                name: 'department',
+                message: `Which department budget do you want to see?`,
+                choices: departList,
+            },
+        ]);
+
+        const { department } = chosenDepartment;
+
+        const results = await employeeTracker.departmentBudget(department.id);
+
+        if(results.length === 0){
+            results.push({
+                Department: department.name,
+                "Total Utilized Budget": 0
+            })
+            console.table('\n', results);
+        } else{
+            console.table('\n', results);
+        }
+        
+        
+
+        menu();
+
+    } catch (err) {
+        console.error(err)
+    }
+
+}
 
 
 // Finish the program

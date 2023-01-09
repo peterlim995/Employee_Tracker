@@ -64,16 +64,16 @@ class EmployeeTracker {
     }
 
     // update employee's role - takes employee id and role id as input parameters
-    async updateEmployee(employee) {
+    async updateEmployee(employeeId) {
         const sql = `UPDATE employee SET role_id = ? where id = ?`;
-        let result = await this.db.promise().query(sql, employee);
+        let result = await this.db.promise().query(sql, employeeId);
         return `Updated employee's role`;
     }
 
     // return employee's full name by id
-    async employeeName(id) {
+    async employeeName(employeeId) {
         const sql = `select first_name, last_name from employee where id = ?`;
-        let result = await this.db.promise().query(sql, id);
+        let result = await this.db.promise().query(sql, employeeId);
         const { first_name, last_name } = result[0][0];
         // console.log("result: ", result);
         return first_name + ' ' + last_name;
@@ -151,7 +151,18 @@ class EmployeeTracker {
         return `Delete the employee`;
     }
 
-    
+    // total utilized budget of a department 
+    async departmentBudget(departmentId) {
+        const sql = `SELECT name AS Department, SUM(salary) AS "Total Utilized Budget"
+        FROM employee        
+        LEFT JOIN role ON employee.role_id = role.id
+        LEFT JOIN department ON role.department_id = department.id
+        WHERE department.id = ?
+        GROUP BY department;`;
+        let result = await this.db.promise().query(sql, departmentId);
+        return result[0];
+    }
+
 
     // return employee id by full name
     // async employeeIdByFullName(name) {
