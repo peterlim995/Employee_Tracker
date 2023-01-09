@@ -442,7 +442,7 @@ async function updateEmployeeManager() {
                 choices: [
                     {
                         name: 'None',
-                        value: -1
+                        value: null
                     }, ...managerNames
                 ],
             },
@@ -451,6 +451,7 @@ async function updateEmployeeManager() {
         const { managerId } = answer;
 
         const result = await employeeTracker.updateManager([managerId, employeeId]);
+                
         console.log(result);
         menu();
 
