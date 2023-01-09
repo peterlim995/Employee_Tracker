@@ -1,5 +1,3 @@
-// const db = require('./connection');
-// const mysql = require('mysql2');
 
 class EmployeeTracker {
     constructor(db) {
@@ -79,26 +77,6 @@ class EmployeeTracker {
         return first_name + ' ' + last_name;
     }
 
-    // return department id by name
-    // async departmentIdbyName(name) {
-    //     const sql = `SELECT id 
-    //     FROM department
-    //     WHERE name = ?`;
-    //     let result = await this.db.promise().query(sql, name);
-    //     const { id } = result[0][0];
-    //     return id;
-    // }
-
-    // return role id by title
-    // async roleIdbyTitle(title) {
-    //     const sql = `SELECT id 
-    //         FROM role
-    //         WHERE title = ?`;
-    //     let result = await this.db.promise().query(sql, title);
-    //     const { id } = result[0][0];
-    //     return id;
-    // }
-
     // update Managger - takes employee id and manager id as input parameters
     async updateManager(update) {
         const sql = `UPDATE employee SET manager_id = ? where id = ?`;
@@ -163,19 +141,6 @@ class EmployeeTracker {
         return result[0];
     }
 
-
-    // return employee id by full name
-    // async employeeIdByFullName(name) {
-
-    //     const first_name = name.split(' ')[0];
-    //     // const last_name = name.split(' ')[1];
-    //     const sql = `SELECT id 
-    //         FROM employee
-    //         WHERE first_name = ?`;
-    //     let result = await this.db.promise().query(sql, first_name);
-    //     const { id } = result[0][0];
-    //     return id;
-    // }
 }
 
 module.exports = EmployeeTracker;

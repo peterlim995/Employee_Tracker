@@ -4,8 +4,6 @@ const logo = require('asciiart-logo');
 const cTable = require('console.table');
 const db = require('./db/connection');
 const EmployeeTracker = require('./db');
-// const questions = require('./db/prompt');
-
 
 // EmployeeTracker Class 
 const employeeTracker = new EmployeeTracker(db);
@@ -236,11 +234,8 @@ async function addEmployee() {
             },
         ]);
 
-        // console.log("answer: ", answer);
-
         const { firstname, lastname, role, managerId } = answer;
-
-        // const roleId = await employeeTracker.roleIdbyTitle(role);
+        
         let results;
 
         // if No manager
@@ -295,10 +290,8 @@ async function updateEmployeeRole() {
             },
         ]);
 
-
         const { employeeId, role } = answer;
 
-        // const roleId = await employeeTracker.roleIdbyTitle(role);
         const results = await employeeTracker.updateEmployee([role.id, employeeId]);
         console.log('\n', results);
         menu();
@@ -366,8 +359,7 @@ async function addRole() {
             },
         ]);
 
-        const { role, salary, department } = answer;
-        // const departmentId = await employeeTracker.departmentIdbyName(department);
+        const { role, salary, department } = answer;        
         const results = await employeeTracker.createRole([role, salary, department.id])
         console.log('\n', results);
         menu();
@@ -534,6 +526,7 @@ async function viewEmployeesByDepartment() {
 
         const results = await employeeTracker.viewEmployeeByDepartment(department.id);
 
+
         if (results.length !== 0) {
             console.table('\n', results);
         } else {
@@ -651,6 +644,7 @@ async function departmentBudget() {
 
         const results = await employeeTracker.departmentBudget(department.id);
 
+        // when there is no data
         if(results.length === 0){
             results.push({
                 Department: department.name,
@@ -659,9 +653,7 @@ async function departmentBudget() {
             console.table('\n', results);
         } else{
             console.table('\n', results);
-        }
-        
-        
+        }             
 
         menu();
 
