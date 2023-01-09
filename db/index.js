@@ -71,7 +71,7 @@ class EmployeeTracker {
     }
 
     // return employee's full name by id
-    async managerNameById(id) {
+    async employeeName(id) {
         const sql = `select first_name, last_name from employee where id = ?`;
         let result = await this.db.promise().query(sql, id);
         const { first_name, last_name } = result[0][0];
@@ -80,24 +80,24 @@ class EmployeeTracker {
     }
 
     // return department id by name
-    async departmentIdbyName(name) {
-        const sql = `SELECT id 
-        FROM department
-        WHERE name = ?`;
-        let result = await this.db.promise().query(sql, name);
-        const { id } = result[0][0];
-        return id;
-    }
+    // async departmentIdbyName(name) {
+    //     const sql = `SELECT id 
+    //     FROM department
+    //     WHERE name = ?`;
+    //     let result = await this.db.promise().query(sql, name);
+    //     const { id } = result[0][0];
+    //     return id;
+    // }
 
     // return role id by title
-    async roleIdbyTitle(title) {
-        const sql = `SELECT id 
-            FROM role
-            WHERE title = ?`;
-        let result = await this.db.promise().query(sql, title);
-        const { id } = result[0][0];
-        return id;
-    }
+    // async roleIdbyTitle(title) {
+    //     const sql = `SELECT id 
+    //         FROM role
+    //         WHERE title = ?`;
+    //     let result = await this.db.promise().query(sql, title);
+    //     const { id } = result[0][0];
+    //     return id;
+    // }
 
     // update Managger - takes employee id and manager id as input parameters
     async updateManager(update) {
@@ -118,16 +118,40 @@ class EmployeeTracker {
     }
 
     // view Employees by department - take manager id as input parameter
-    async viewEmployeeByDepartment(managerId) {
-        const sql = `SELECT employee.id, first_name, last_name, title, name as department,  salary 
-        FROM employee        
+    async viewEmployeeByDepartment(departmentId) {
+        const sql = `SELECT employee.id AS id, employee.first_name, employee.last_name, title, name AS department, salary, CONCAT(em.first_name, ' ', em.last_name) AS manager
+        FROM employee
         LEFT JOIN role ON employee.role_id = role.id
         LEFT JOIN department ON role.department_id = department.id
-        WHERE manager_id = ?;`;
-        let result = await this.db.promise().query(sql, managerId);
+        LEFT JOIN employee em ON em.id = employee.manager_id
+        WHERE department_id = ?;`;
+        let result = await this.db.promise().query(sql, departmentId);
         return result[0];
     }
 
+
+    // Delete department - takes department id as input parameters
+    async deleteDepartment(departmentId) {
+        const sql = `DELETE FROM department WHERE id = ?;`;
+        let result = await this.db.promise().query(sql, departmentId);
+        return `Delete the department`;
+    }
+
+    // Delete role - takes role id as input parameters
+    async deleteRole(roleId) {
+        const sql = `DELETE FROM role WHERE id = ?;`;
+        let result = await this.db.promise().query(sql, roleId);
+        return `Delete the role`;
+    }
+
+    // Delete employee - takes employee id as input parameters
+    async deleteEmployee(employeeId) {
+        const sql = `DELETE FROM employee WHERE id = ?;`;
+        let result = await this.db.promise().query(sql, employeeId);
+        return `Delete the employee`;
+    }
+
+    
 
     // return employee id by full name
     // async employeeIdByFullName(name) {

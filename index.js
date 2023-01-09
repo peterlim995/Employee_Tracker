@@ -70,6 +70,22 @@ async function menu() {
                             value: 9
                         },
                         {
+                            name: 'View employees by department',
+                            value: 10
+                        },
+                        {
+                            name: 'Delete department',
+                            value: 11
+                        },
+                        {
+                            name: 'Delete role',
+                            value: 12
+                        },
+                        {
+                            name: 'Delete employee',
+                            value: 13
+                        },
+                        {
                             name: 'Quit',
                             value: 0
                         }
@@ -106,6 +122,18 @@ async function menu() {
             case 9:
                 viewEmployeesByManager();
                 break;
+            case 10:
+                viewEmployeesByDepartment();
+                break;
+            case 11:
+                deleteDepartment();
+                break;
+            case 12:
+                deleteRole();
+                break;
+            case 13:
+                deleteEmployee();
+                break;
             case 0:
                 quit();
                 break;
@@ -126,7 +154,7 @@ async function viewAllEmployees() {
         for (let i = 0; i < results.length; i++) {
             const result = results[i];
             if (result.manager) {
-                result.manager = await employeeTracker.managerNameById(result.manager);
+                result.manager = await employeeTracker.employeeName(result.manager);
             }
         }
 
@@ -134,7 +162,7 @@ async function viewAllEmployees() {
 
         // const employee = results.map(async (result) => {
         //     if (result.manager) {
-        //         result.manager = await employeeTracker.managerNameById(result.manager);
+        //         result.manager = await employeeTracker.employeeName(result.manager);
         //     }
         //     return result;
         // })
@@ -151,7 +179,16 @@ async function viewAllEmployees() {
 // Role title list return
 async function roleList() {
     const role = await employeeTracker.viewRole();
-    return role.map(result => result.title);
+    return role.map(result => {
+        return {
+            name: result.title,
+            value: {
+                id: result.id,
+                title: result.title
+            }
+        }    
+        
+    });
 }
 
 
@@ -192,19 +229,18 @@ async function addEmployee() {
             },
         ]);
 
-        console.log("answer: ", answer);
+        // console.log("answer: ", answer);
 
         const { firstname, lastname, role, managerId } = answer;
 
-
-        const roleId = await employeeTracker.roleIdbyTitle(role);
+        // const roleId = await employeeTracker.roleIdbyTitle(role);
         let results;
 
         // if No manager
         if (managerId === -1) {
-            results = await employeeTracker.createEmployee([firstname, lastname, roleId]);
+            results = await employeeTracker.createEmployee([firstname, lastname, role.id]);
         } else {
-            results = await employeeTracker.createEmployee([firstname, lastname, roleId, managerId]);
+            results = await employeeTracker.createEmployee([firstname, lastname, role.id, managerId]);
         }
 
         console.log('\n', results);
@@ -255,8 +291,8 @@ async function updateEmployeeRole() {
 
         const { employeeId, role } = answer;
 
-        const roleId = await employeeTracker.roleIdbyTitle(role);
-        const results = await employeeTracker.updateEmployee([roleId, employeeId]);
+        // const roleId = await employeeTracker.roleIdbyTitle(role);
+        const results = await employeeTracker.updateEmployee([role.id, employeeId]);
         console.log('\n', results);
         menu();
 
@@ -283,12 +319,12 @@ async function viewAllRole() {
 async function departmentList() {
     const department = await employeeTracker.viewDepartment()
     return department.map(result => {
-            return {
-                name: result.name,
-                value: result.id
-            }
+        return {
+            name: result.name,
+            value: result.id
         }
-        );
+    }
+    );
 }
 
 // Add Role
@@ -433,7 +469,7 @@ async function managerList() {
     // create object of Manager full name and id
     for (let i = 0; i < employeeIdList.length; i++) {
         employeeList.push({
-            name: await employeeTracker.managerNameById(employeeIdList[i]),
+            name: await employeeTracker.employeeName(employeeIdList[i]),
             value: employeeIdList[i]
         });
     }
@@ -477,18 +513,48 @@ async function viewEmployeesByDepartment() {
         const chosenDepartment = await inquirer.prompt([
             {
                 type: 'list',
-                name: 'department',
+                name: 'departmentId',
                 message: `Which department employees do you want to see?`,
                 choices: departList,
             },
         ]);
 
-        const { department } = chosenDepartment;
-        // const departmentId = await employeeTracker.departmentIdbyName(department);
+        const { departmentId } = chosenDepartment;
 
-        const results = await employeeTracker.viewEmployeeByManager(managerId);
+        const results = await employeeTracker.viewEmployeeByDepartment(departmentId);
 
-        console.table('\n', results);
+        if (results.length !== 0) {
+            console.table('\n', results);
+        } else {
+            console.log(`There is no employee in the department`);
+        }
+        menu();
+
+    } catch (err) {
+        console.error(err)
+    }
+
+}
+
+// Delete Department
+async function deleteDepartment() {
+    try {
+        const departList = await departmentList();
+
+        const chosenDepartment = await inquirer.prompt([
+            {
+                type: 'list',
+                name: 'departmentId',
+                message: `Which department do you want to delete?`,
+                choices: departList,
+            },
+        ]);
+
+        const { departmentId } = chosenDepartment;
+
+        const results = await employeeTracker.deleteDepartment(departmentId);
+
+        console.log(results);
 
         menu();
 
@@ -497,6 +563,63 @@ async function viewEmployeesByDepartment() {
     }
 
 }
+
+// Delete role
+async function deleteRole() {
+    try {
+        const rolelist = await roleList();
+
+        const chosenRole = await inquirer.prompt([
+            {
+                type: 'list',
+                name: 'role',
+                message: `Which role do you want to delete?`,
+                choices: rolelist,
+            },
+        ]);
+
+        const { role } = chosenRole;
+
+        const results = await employeeTracker.deleteRole(role.id);
+
+        console.log(results);
+
+        menu();
+
+    } catch (err) {
+        console.error(err)
+    }
+
+}
+
+// Delete Employee
+async function deleteEmployee() {
+    try {
+        const employees = await employeeList();
+
+        const chosenEmployee = await inquirer.prompt([
+            {
+                type: 'list',
+                name: 'employeeId',
+                message: `Which employee do you want to delete?`,
+                choices: employees,
+            },
+        ]);
+
+        const { employeeId } = chosenEmployee;
+
+        const results = await employeeTracker.deleteEmployee(employeeId);
+
+        console.log(results);
+
+        menu();
+
+    } catch (err) {
+        console.error(err)
+    }
+
+}
+
 
 
 // Finish the program

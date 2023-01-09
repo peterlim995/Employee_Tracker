@@ -46,6 +46,8 @@ LEFT JOIN department ON role.department_id = department.id
 LEFT JOIN employee em ON em.id = employee.manager_id
 WHERE department_id = 1;
 
+-- delete department
+DELETE FROM department WHERE id = ?;
 
 
 
