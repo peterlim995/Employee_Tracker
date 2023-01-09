@@ -203,9 +203,12 @@ async function addEmployee() {
                     {
                         name: 'None',
                         value: -1
-                     }, ...managerNames],
+                     }, ...managerNames
+                    ],
             },
         ]);
+
+        console.log("answer: ",answer);
 
         const { firstname, lastname, role, managerId } = answer;
 
@@ -216,8 +219,7 @@ async function addEmployee() {
         // if No manager
         if (managerId === -1) {
             results = await employeeTracker.createEmployee([firstname, lastname, roleId]);
-        } else {
-            // const managerId = await employeeTracker.employeeIdByFullName(manager);
+        } else {            
             results = await employeeTracker.createEmployee([firstname, lastname, roleId, managerId]);
         }
 
@@ -265,6 +267,7 @@ async function updateEmployeeRole() {
                 choices: titles,
             },
         ]);
+
 
         const { employeeId, role } = answer;       
 
@@ -379,36 +382,41 @@ async function addDepartment() {
 // Update Employee Manager
 async function updateEmployeeManager() {
     try {
-
-        // employee's full name array
+        
         const employees = await employeeList();
 
         const chosenEmployee = await inquirer.prompt([
             {
                 type: 'list',
-                name: 'employeeName',
+                name: 'employeeId',
                 message: `Which employee\'s manager do you want update?`,
                 choices: employees,
             },
         ]);
 
-        const { employeeName } = chosenEmployee;
-        // const employeeId = await employeeTracker.employeeIdByFullName(employeeName);
-
-        const managerNames = employees.filter(name => name != employeeName);
+        const { employeeId } = chosenEmployee;
+        
+        const managerNames = employees.filter(result => result.value != employeeId);
 
         const answer = await inquirer.prompt([
             {
                 type: 'list',
-                name: 'manager',
+                name: 'managerId',
                 message: `Who is the employee's manager?`,
-                choices: ['None', ...managerNames],
+                choices: [
+                    {
+                        name: 'None',
+                        value: -1
+                     }, ...managerNames
+                    ],
             },
         ]);
 
-        const { manager } = answer;
+        const { managerId } = answer;
 
-
+        const result = await employeeTracker.updateManager([managerId, employeeId]);
+        console.log(result);
+        menu();
 
     } catch (err) {
         console.error(err)

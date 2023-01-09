@@ -99,18 +99,26 @@ class EmployeeTracker {
         return id;
     }
 
-    // return employee id by full name
-    async employeeIdByFullName(name) {
-
-        const first_name = name.split(' ')[0];
-        // const last_name = name.split(' ')[1];
-        const sql = `SELECT id 
-            FROM employee
-            WHERE first_name = ?`;
-        let result = await this.db.promise().query(sql, first_name);
-        const { id } = result[0][0];
-        return id;
+    // update Managger - takes employee id and manager id as input parameters
+    async updateManager(update) {
+        const sql = `UPDATE employee SET manager_id = ? where id = ?`;
+        let result = await this.db.promise().query(sql, update);
+        return `Updated Manager`;
     }
+
+
+    // return employee id by full name
+    // async employeeIdByFullName(name) {
+
+    //     const first_name = name.split(' ')[0];
+    //     // const last_name = name.split(' ')[1];
+    //     const sql = `SELECT id 
+    //         FROM employee
+    //         WHERE first_name = ?`;
+    //     let result = await this.db.promise().query(sql, first_name);
+    //     const { id } = result[0][0];
+    //     return id;
+    // }
 }
 
 module.exports = EmployeeTracker;
