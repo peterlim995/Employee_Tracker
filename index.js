@@ -1,16 +1,26 @@
 const inquirer = require('inquirer');
 const logo = require('asciiart-logo');
-const config = require('./package.json');
+// const config = require('./package.json');
 const cTable = require('console.table');
 const db = require('./db/connection');
 const EmployeeTracker = require('./db');
 // const questions = require('./db/prompt');
 
-// Logo Prompt
-console.log(logo(config).render());
 
 // EmployeeTracker Class 
 const employeeTracker = new EmployeeTracker(db);
+
+initApp();
+
+function initApp() {
+    // Logo Prompt
+    // console.log(logo(config).render());
+    console.log(logo({ name: "Employee Manager" }).render());
+
+    menu();
+}
+
+
 
 // Prompt the menu
 async function menu() {
@@ -22,34 +32,74 @@ async function menu() {
                     type: 'list',
                     name: 'todo',
                     message: 'What would you like to do?',
-                    choices: ['View All Employees', 'Add Employee', 'Update Employee Role', 'View All Roles', 'Add Role', 'View All Departments', 'Add Department', 'Quit'],
-                },
+                    choices: [
+                        {
+                            name: 'View All Employees',
+                            value: 1
+                        },
+                        {
+                            name: 'Add Employee',
+                            value: 2
+                        },
+                        {
+                            name: 'Update Employee Role',
+                            value: 3
+                        },
+                        {
+                            name: 'View All Roles',
+                            value: 4
+                        },
+                        {
+                            name: 'Add Role',
+                            value: 5
+                        },
+                        {
+                            name: 'View All Departments',
+                            value: 6
+                        },
+                        {
+                            name: 'Add Department',
+                            value: 7
+                        },
+                        {
+                            name: 'Update employee manager',
+                            value: 8
+                        },
+                        {
+                            name: 'Quit',
+                            value: 0
+                        }
+                    ]
+                }
             ]);
 
         const { todo } = answer;
         switch (todo) {
-            case 'View All Employees':
+            case 1:
                 viewAllEmployees();
                 break;
-            case 'Add Employee':
+            case 2:
                 addEmployee();
                 break;
-            case 'Update Employee Role':
+            case 3:
                 updateEmployeeRole();
                 break;
-            case 'View All Role':
+            case 4:
                 viewAllRole();
                 break;
-            case 'Add Role':
+            case 5:
                 addRole();
                 break;
-            case 'View All Departments':
+            case 6:
                 viewAllDepartments();
                 break;
-            case 'Add Department':
+            case 7:
                 addDepartment();
                 break;
-            case 'Quit':
+            case 8:
+                updateEmployeeManager();
+                break;
+            case 0:
                 quit();
                 break;
         }
@@ -72,7 +122,17 @@ async function viewAllEmployees() {
                 result.manager = await employeeTracker.getManagerId(result.manager);
             }
         }
+
         console.table('\n', results);
+
+        // const employee = results.map(async (result) => {
+        //     if (result.manager) {
+        //         result.manager = await employeeTracker.getManagerId(result.manager);
+        //     }
+        //     return result;
+        // })
+
+        // console.table('\n', employee);
         menu();
     }
     catch (err) {
@@ -137,23 +197,27 @@ async function addEmployee() {
             },
             {
                 type: 'list',
-                name: 'manager',
+                name: 'managerId',
                 message: `Who is the employee's manager?`,
-                choices: ['None', ...managerNames],
+                choices: [
+                    {
+                        name: 'None',
+                        value: -1
+                     }, ...managerNames],
             },
         ]);
 
-        const { firstname, lastname, role, manager } = answer;
+        const { firstname, lastname, role, managerId } = answer;
 
 
         const roleId = await employeeTracker.roleIdbyTitle(role);
         let results;
 
         // if No manager
-        if (manager === 'None') {
+        if (managerId === -1) {
             results = await employeeTracker.createEmployee([firstname, lastname, roleId]);
         } else {
-            const managerId = await employeeTracker.employeeIdByFullName(manager);
+            // const managerId = await employeeTracker.employeeIdByFullName(manager);
             results = await employeeTracker.createEmployee([firstname, lastname, roleId, managerId]);
         }
 
@@ -166,11 +230,17 @@ async function addEmployee() {
 
 }
 
-// return employee's full name list array
+// return array object of employee's full name and id
 async function employeeList() {
     const employees = await employeeTracker.viewEmployee();
-    return employees.map(result => result.first_name + ' ' + result.last_name);
+    return employees.map(result => {
+        return {
+            name: result.first_name + ' ' + result.last_name,
+            value: result.id
+        }
+    });
 }
+
 
 // Update Employee Role
 async function updateEmployeeRole() {
@@ -184,7 +254,7 @@ async function updateEmployeeRole() {
         const answer = await inquirer.prompt([
             {
                 type: 'list',
-                name: 'employeeName',
+                name: 'employeeId',
                 message: `Which employee's role do you want to update?`,
                 choices: employees,
             },
@@ -196,13 +266,10 @@ async function updateEmployeeRole() {
             },
         ]);
 
-        const { employeeName, role } = answer;
-        const name = employeeName.split(' ');
-        const first_name = name[0];
-        const last_name = name[1];
+        const { employeeId, role } = answer;       
 
         const roleId = await employeeTracker.roleIdbyTitle(role);
-        const results = await employeeTracker.updateEmployee([roleId, first_name, last_name])
+        const results = await employeeTracker.updateEmployee([roleId, employeeId]);
         console.log('\n', results);
         menu();
 
@@ -307,7 +374,45 @@ async function addDepartment() {
         console.error(err)
 
     }
+}
 
+// Update Employee Manager
+async function updateEmployeeManager() {
+    try {
+
+        // employee's full name array
+        const employees = await employeeList();
+
+        const chosenEmployee = await inquirer.prompt([
+            {
+                type: 'list',
+                name: 'employeeName',
+                message: `Which employee\'s manager do you want update?`,
+                choices: employees,
+            },
+        ]);
+
+        const { employeeName } = chosenEmployee;
+        // const employeeId = await employeeTracker.employeeIdByFullName(employeeName);
+
+        const managerNames = employees.filter(name => name != employeeName);
+
+        const answer = await inquirer.prompt([
+            {
+                type: 'list',
+                name: 'manager',
+                message: `Who is the employee's manager?`,
+                choices: ['None', ...managerNames],
+            },
+        ]);
+
+        const { manager } = answer;
+
+
+
+    } catch (err) {
+        console.error(err)
+    }
 }
 
 // Finish the program
@@ -316,5 +421,3 @@ function quit() {
     process.exit(0);
 }
 
-
-menu();
