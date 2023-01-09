@@ -165,15 +165,23 @@ async function viewAllEmployees() {
 
         console.table('\n', results);
 
+        menu();
+
         // const employee = results.map(async (result) => {
         //     if (result.manager) {
         //         result.manager = await employeeTracker.employeeName(result.manager);
         //     }
         //     return result;
         // })
-
-        // console.table('\n', employee);
-        menu();
+        
+        // Promise.all(employee)
+        //     .then((values) => {
+        //         // console.log("employee: ", values);
+        //         console.table('\n', values);
+        //         menu();
+        //     })
+        //     .catch((err) => new Error(err));
+       
     }
     catch (err) {
         console.error(err)
@@ -235,7 +243,7 @@ async function addEmployee() {
         ]);
 
         const { firstname, lastname, role, managerId } = answer;
-        
+
         let results;
 
         // if No manager
@@ -359,7 +367,7 @@ async function addRole() {
             },
         ]);
 
-        const { role, salary, department } = answer;        
+        const { role, salary, department } = answer;
         const results = await employeeTracker.createRole([role, salary, department.id])
         console.log('\n', results);
         menu();
@@ -443,7 +451,7 @@ async function updateEmployeeManager() {
         const { managerId } = answer;
 
         const result = await employeeTracker.updateManager([managerId, employeeId]);
-                
+
         console.log(result);
         menu();
 
@@ -645,15 +653,15 @@ async function departmentBudget() {
         const results = await employeeTracker.departmentBudget(department.id);
 
         // when there is no data
-        if(results.length === 0){
+        if (results.length === 0) {
             results.push({
                 Department: department.name,
                 "Total Utilized Budget": 0
             })
             console.table('\n', results);
-        } else{
+        } else {
             console.table('\n', results);
-        }             
+        }
 
         menu();
 

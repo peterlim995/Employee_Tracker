@@ -8,6 +8,23 @@
 
  View and manage the departments, roles, and employees in my company
 
+* View All Employees
+* Add Employee
+* Update Employee Role 
+* View All Roles
+* Add Role
+* View All Department
+* Add Department
+* Update Employee Manager
+* View Employees by Manager
+* View Employees by Department
+* Delete Department
+* Delete Role
+* Delete Employee
+* View Total Utilized Budget of Department
+* Quit
+
+
 ```
 
 ## GitHub repository
